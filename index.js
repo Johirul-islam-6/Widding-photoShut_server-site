@@ -59,12 +59,12 @@ async function run() {
             res.send(result)
         })
         //update informatin
-        // app.post('/all-reviews/:id', async (req, res) => {
-        //     const id = req.params.id;
-        //     const query = { _id: ObjectId(id) };
-        //     const result = await allReviw.insertOne(query);
-        //     res.send(result);
-        // })
+        app.get('/all-reviews/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await allReviw.findOne(query);
+            res.send(result);
+        })
         // Delete methort 
         app.delete('/all-reviews/:id', async (req, res) => {
             const id = req.params.id;
