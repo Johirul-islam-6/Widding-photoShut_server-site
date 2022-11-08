@@ -34,7 +34,7 @@ async function run() {
             res.send(servicesOne)
         })
 
-        // all review sen database
+        // all review service _id filltering sen database
         app.get('/all-review', async (req, res) => {
             let query = {};
             if (req.query.service) {
@@ -46,7 +46,7 @@ async function run() {
             const result = await cursor.toArray();
             res.send(result)
         })
-        //email
+        //email filltering
         app.get('/all-reviews', async (req, res) => {
             let query = {};
             if (req.query.email) {
@@ -58,10 +58,23 @@ async function run() {
             const result = await cursor.toArray();
             res.send(result)
         })
-        // filtering 
-        // app.get('/all-review/:id', async (req, res) => {
-
+        //update informatin
+        // app.post('/all-reviews/:id', async (req, res) => {
+        //     const id = req.params.id;
+        //     const query = { _id: ObjectId(id) };
+        //     const result = await allReviw.insertOne(query);
+        //     res.send(result);
         // })
+        // Delete methort 
+        app.delete('/all-reviews/:id', async (req, res) => {
+            const id = req.params.id;
+            // console.log(id)
+            const query = { _id: ObjectId(id) };
+            const userDelete = await allReviw.deleteOne(query);
+            res.send(userDelete);
+
+        })
+
         app.post('/all-review', async (req, res) => {
             const review = req.body;
             const result = await allReviw.insertOne(review);
