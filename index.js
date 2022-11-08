@@ -10,21 +10,64 @@ require('dotenv').config()
 app.use(cors());
 app.use(express.json());
 
-//MongoDb connected
-
-// console.log(process.env.DB_USER);
-// console.log(process.env.DB_PASSWORD);
-
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@rasel-01.uhpxwkk.mongodb.net/?retryWrites=true&w=majority`;
 
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
-
+// console.log(uri);
 async function run() {
 
     try {
         const serviceCollection = client.db('My-Services').collection('services-lisht');
-        // const orders = client.db('geniusCar').collection('order');
+        const allReviw = client.db('My-Services').collection('review');
         //all services find data mongoDb
+        app.get('/services', async (req, res) => {
+            const query = {};
+            const cursor = serviceCollection.find(query);
+            const result = await cursor.toArray();
+            res.send(result)
+        })
+        // one service details
+        app.get('/services/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const servicesOne = await serviceCollection.findOne(query);
+            res.send(servicesOne)
+        })
+
+        // all review sen database
+        app.get('/all-review', async (req, res) => {
+            let query = {};
+            if (req.query.service) {
+                query = {
+                    service: req.query.service
+                }
+            }
+            const cursor = allReviw.find(query);
+            const result = await cursor.toArray();
+            res.send(result)
+        })
+        //email
+        app.get('/all-reviews', async (req, res) => {
+            let query = {};
+            if (req.query.email) {
+                query = {
+                    email: req.query.email
+                }
+            }
+            const cursor = allReviw.find(query);
+            const result = await cursor.toArray();
+            res.send(result)
+        })
+        // filtering 
+        // app.get('/all-review/:id', async (req, res) => {
+
+        // })
+        app.post('/all-review', async (req, res) => {
+            const review = req.body;
+            const result = await allReviw.insertOne(review);
+            res.send(result)
+        })
+
 
 
     } catch (error) {
