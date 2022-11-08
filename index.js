@@ -74,7 +74,7 @@ async function run() {
             res.send(userDelete);
 
         })
-
+        // all review parson add
         app.post('/all-review', async (req, res) => {
             const review = req.body;
             const result = await allReviw.insertOne(review);
@@ -95,7 +95,7 @@ run().catch(error => console.log(error.name, error.message, error.stack))
 
 // mongoDb ending
 app.get('/', (req, res) => {
-    res.send("server is runing now")
+    res.send("server is runing now !")
 })
 
 app.listen(port, () => {
