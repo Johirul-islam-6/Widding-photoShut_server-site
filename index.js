@@ -2,10 +2,11 @@ const express = require('express')
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors')
 const app = express();
+const jwt = require('jsonwebtoken');
 const port = process.env.PORT || 5000;
 
 require('dotenv').config()
-
+//eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InJhc2Vsa2hhbmRoYWthMkBnbWFpbC5jb20iLCJpYXQiOjE2NjgwMTI1MDQsImV4cCI6MTY2ODAxNjEwNH0.hqZB6J2R5SB65MQnpDetK1xowX4EE_uk_poY_4v_0yY
 //middle wares
 app.use(cors());
 app.use(express.json());
@@ -14,11 +15,41 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@ras
 
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 // console.log(uri);
+
+//Verify Access token 
+// function verifyJWT(req, res, next) {
+
+//     const authHeader = req.headers.authorization;
+
+//     if (!authHeader) {
+//         return res.status(401).send({ message: 'unauthorized access' });
+//     }
+//     const token = authHeader.split(' ')[1];
+//     jwt.verify(token, process.env.DB_TOKEN, function (err, decoded) {
+
+//         if (err) {
+//             return res.status(403).send({ message: 'unauthorized access2' });
+//         }
+//         req.decoded = decoded;
+//         next()
+
+//     })
+
+// }
+
+
 async function run() {
 
     try {
         const serviceCollection = client.db('My-Services').collection('services-lisht');
         const allReviw = client.db('My-Services').collection('review');
+        //jwt Token Access
+        app.post('/jwt', (req, res) => {
+            const user = req.body;
+            const token = jwt.sign(user, process.env.DB_TOKEN, { expiresIn: '1h' });
+            res.send({ token });
+        })
+
         //all services find data mongoDb
         app.get('/services', async (req, res) => {
             const query = {};
@@ -43,7 +74,7 @@ async function run() {
         app.get('/services/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
-            const servicesOne = await serviceCollection.findOne(query);
+            const servicesOne = await serviceCollection.findOne(query); // .sort({ _id: -1 })
             res.send(servicesOne)
         })
 
@@ -61,6 +92,12 @@ async function run() {
         })
         //email filltering
         app.get('/all-reviews', async (req, res) => {
+            //verifyJWT(),
+            // const decoded = req.decoded;
+            // if (decoded.email != req.query.email) {
+            //     res.status(403).send({ message: 'ও সোনা এখানে কি চাও তুমার টাই email যাও' })
+            // }
+
             let query = {};
             if (req.query.email) {
                 query = {
