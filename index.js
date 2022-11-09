@@ -26,6 +26,12 @@ async function run() {
             const result = await cursor.toArray();
             res.send(result)
         })
+        //add sevice new
+        app.post('/services', async (req, res) => {
+            const review = req.body;
+            const result = await serviceCollection.insertOne(review);
+            res.send(result)
+        })
         // one service details
         app.get('/services/:id', async (req, res) => {
             const id = req.params.id;
@@ -72,6 +78,26 @@ async function run() {
             const query = { _id: ObjectId(id) };
             const userDelete = await allReviw.deleteOne(query);
             res.send(userDelete);
+
+        })
+        // patch methord
+        app.put('/all-reviews/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const user = req.body;
+            const option = { upsert: true };
+            const updateUser = {
+                $set: {
+                    customer: user?.customer,
+                    message: user?.message,
+                    email: user?.email,
+                    serviceName: user?.serviceName,
+                    reting: user?.reting,
+
+                }
+            }
+            const result = await allReviw.updateOne(filter, updateUser, option);
+            res.send(result);
 
         })
         // all review parson add
