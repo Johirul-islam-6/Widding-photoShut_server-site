@@ -26,6 +26,13 @@ async function run() {
             const result = await cursor.toArray();
             res.send(result)
         })
+        //limite data
+        app.get('/servicesl', async (req, res) => {
+            const query = {};
+            const cursor = serviceCollection.find(query);
+            const result = await cursor.limit(3).toArray();
+            res.send(result)
+        })
         //add sevice new
         app.post('/services', async (req, res) => {
             const review = req.body;
