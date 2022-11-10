@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 const port = process.env.PORT || 5000;
 
 require('dotenv').config()
-//eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InJhc2Vsa2hhbmRoYWthMkBnbWFpbC5jb20iLCJpYXQiOjE2NjgwMTI1MDQsImV4cCI6MTY2ODAxNjEwNH0.hqZB6J2R5SB65MQnpDetK1xowX4EE_uk_poY_4v_0yY
+
 //middle wares
 app.use(cors());
 app.use(express.json());
@@ -14,28 +14,27 @@ app.use(express.json());
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@rasel-01.uhpxwkk.mongodb.net/?retryWrites=true&w=majority`;
 
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
-// console.log(uri);
 
 //Verify Access token 
-// function verifyJWT(req, res, next) {
+function verifyJwt(req, res, next) {
 
-//     const authHeader = req.headers.authorization;
+    const authHeader = req.headers.authorization;
+    // console.log(authHeader);
+    if (!authHeader) {
+        return res.status(401).send({ message: 'অন্য বেটার Email কি চাস  শালার #চোর ' });
+    }
+    const token = authHeader.split(' ')[1];
+    // console.log(token);
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+        if (err) {
+            return res.status(403).send({ message: 'Forbidden access2' });
+        }
+        req.decoded = decoded;
+        next()
 
-//     if (!authHeader) {
-//         return res.status(401).send({ message: 'unauthorized access' });
-//     }
-//     const token = authHeader.split(' ')[1];
-//     jwt.verify(token, process.env.DB_TOKEN, function (err, decoded) {
+    })
 
-//         if (err) {
-//             return res.status(403).send({ message: 'unauthorized access2' });
-//         }
-//         req.decoded = decoded;
-//         next()
-
-//     })
-
-// }
+}
 
 
 async function run() {
@@ -46,7 +45,7 @@ async function run() {
         //jwt Token Access
         app.post('/jwt', (req, res) => {
             const user = req.body;
-            const token = jwt.sign(user, process.env.DB_TOKEN, { expiresIn: '1h' });
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1d' });
             res.send({ token });
         })
 
@@ -74,11 +73,11 @@ async function run() {
         app.get('/services/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
-            const servicesOne = await serviceCollection.findOne(query); // .sort({ _id: -1 })
+            const servicesOne = await serviceCollection.findOne(query); // 
             res.send(servicesOne)
         })
 
-        // all review service _id filltering sen database
+        // Details all review service _id filltering sen database
         app.get('/all-review', async (req, res) => {
             let query = {};
             if (req.query.service) {
@@ -87,16 +86,17 @@ async function run() {
                 }
             }
             const cursor = allReviw.find(query);
-            const result = await cursor.toArray();
+            const result = await cursor.sort({ _id: -1 }).toArray();
             res.send(result)
         })
         //email filltering
-        app.get('/all-reviews', async (req, res) => {
-            //verifyJWT(),
-            // const decoded = req.decoded;
-            // if (decoded.email != req.query.email) {
-            //     res.status(403).send({ message: 'ও সোনা এখানে কি চাও তুমার টাই email যাও' })
-            // }
+        app.get('/all-reviews', verifyJwt, async (req, res) => { //verifyJwt,
+            const decoded = req.decoded;
+            // console.log("insite", decoded);
+
+            if (decoded.email !== req.query.email) {
+                res.status(403).send({ message: 'ও সোনা এখানে কি চাও তুমার You are unathorize' })
+            }
 
             let query = {};
             if (req.query.email) {
